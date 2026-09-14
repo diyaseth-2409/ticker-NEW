@@ -1,0 +1,1852 @@
+<title>Ticker Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&family=Roboto:wght@400;500;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   Light palette on warm off-white ground — editorial, not generic SaaS.
+   TOI red anchors every selection/accent state.
+   ============================================================ */
+:root {
+  --toi-red: #D7282F;
+  --toi-red-dark: #B52025;
+  --toi-red-dim: rgba(215,40,47,0.10);
+  --toi-red-glow: rgba(215,40,47,0.18);
+
+  --bg-page: #F2F0EC;
+  --bg-panel: #FFFFFF;
+  --bg-panel-alt: #F8F7F4;
+  --bg-input: #FFFFFF;
+
+  --border: #E0DDD7;
+  --border-subtle: #EEECE8;
+
+  --text-primary: #1A1714;
+  --text-secondary: #68625C;
+  --text-muted: #9B958F;
+
+  --selected-bg: rgba(215,40,47,0.06);
+  --hover: rgba(0,0,0,0.03);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+
+  --radius-sm: 5px;
+  --radius-md: 9px;
+  --radius-lg: 13px;
+
+  --header-h: 58px;
+  --bottom-h: 64px;
+  --left-w: 272px;
+  --right-w: 376px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-page: #111213;
+    --bg-panel: #1C1E21;
+    --bg-panel-alt: #252729;
+    --bg-input: #1C1E21;
+    --border: #2E3035;
+    --border-subtle: #262830;
+    --text-primary: #EDE9E3;
+    --text-secondary: #89837D;
+    --text-muted: #5A5550;
+    --selected-bg: rgba(215,40,47,0.13);
+    --hover: rgba(255,255,255,0.04);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  }
+}
+:root[data-theme="dark"] {
+  --bg-page: #111213;
+  --bg-panel: #1C1E21;
+  --bg-panel-alt: #252729;
+  --bg-input: #1C1E21;
+  --border: #2E3035;
+  --border-subtle: #262830;
+  --text-primary: #EDE9E3;
+  --text-secondary: #89837D;
+  --text-muted: #5A5550;
+  --selected-bg: rgba(215,40,47,0.13);
+  --hover: rgba(255,255,255,0.04);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--toi-red); outline-offset: 2px; }
+
+/* ============================================================
+   SCROLLBARS
+   ============================================================ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  height: var(--header-h);
+  min-height: var(--header-h);
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 16px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.header-logomark {
+  width: 34px;
+  height: 34px;
+  background: var(--toi-red);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(215,40,47,0.3);
+}
+.header-logomark svg { width: 19px; height: 19px; }
+.header-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.header-sep {
+  font-size: 14px;
+  color: var(--border);
+  font-weight: 200;
+  user-select: none;
+}
+.header-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.header-chip {
+  background: var(--toi-red-dim);
+  color: var(--toi-red);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 33px;
+  padding: 0 13px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.13s, opacity 0.13s, transform 0.1s;
+}
+.btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.btn:active { transform: scale(0.97); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--hover); color: var(--text-primary); }
+.btn-primary {
+  background: var(--toi-red);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(215,40,47,0.28);
+}
+.btn-primary:hover { background: var(--toi-red-dark); }
+.btn-success { background: #15803D !important; color: #fff; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.studio {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ============================================================
+   PANEL — TEMPLATES (LEFT)
+   ============================================================ */
+.panel-left {
+  width: var(--left-w);
+  min-width: var(--left-w);
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel-hd {
+  padding: 13px 14px 11px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-hd-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.panel-hd-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.tpl-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.tpl-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.tpl-card:hover { border-color: var(--text-muted); box-shadow: var(--shadow-sm); }
+.tpl-card.selected {
+  border-color: var(--toi-red);
+  background: var(--selected-bg);
+  box-shadow: 0 0 0 3px var(--toi-red-dim);
+}
+.tpl-preview-bg {
+  background: #1E1F23;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+}
+.mini-ticker {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 24px;
+  overflow: hidden;
+  border-radius: 2px;
+}
+.mini-badge {
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  flex-shrink: 0;
+  gap: 2px;
+}
+.mini-dot {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.mini-text {
+  display: flex;
+  align-items: center;
+  padding: 0 7px;
+  font-size: 8px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+}
+.mini-sep { padding: 0 4px; opacity: 0.6; font-size: 7px; }
+.tpl-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+}
+.tpl-meta-info {}
+.tpl-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.tpl-desc {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+.tpl-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--toi-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.tpl-card.selected .tpl-check { opacity: 1; }
+.tpl-check svg { width: 9px; height: 9px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.tpl-divider { height: 1px; background: var(--border); margin: 2px 0; }
+.tpl-scratch {
+  border-style: dashed;
+  background: transparent;
+}
+.tpl-scratch:hover { border-color: var(--toi-red); }
+.tpl-scratch.selected { border-style: solid; }
+.tpl-scratch-preview {
+  background: var(--bg-panel-alt);
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.tpl-scratch-preview svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+/* ============================================================
+   PANEL — EDITOR (CENTER)
+   ============================================================ */
+.panel-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+  overflow: hidden;
+}
+.tab-bar {
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  padding: 0 14px;
+  flex-shrink: 0;
+  gap: 0;
+}
+.tab-btn {
+  height: 44px;
+  padding: 0 15px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+  outline: none;
+}
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--toi-red); border-bottom-color: var(--toi-red); font-weight: 600; }
+.tab-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+/* Sections */
+.sec {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-xs);
+}
+.sec:last-child { margin-bottom: 0; }
+.sec-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+.sec-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Source toggle */
+.src-tog {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.src-opt {
+  flex: 1;
+  text-align: center;
+  padding: 7px 0;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.12s;
+  user-select: none;
+  border: none;
+  background: none;
+}
+.src-opt.active { background: var(--toi-red); color: #fff; font-weight: 600; }
+
+/* Ticker items */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  transition: border-color 0.12s, background 0.12s;
+}
+.ticker-item:hover { border-color: var(--text-muted); }
+.ticker-item.drag-over { border-color: var(--toi-red); background: var(--selected-bg); }
+.ticker-item.dragging { opacity: 0.35; }
+.drag-handle {
+  color: var(--text-muted);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  padding: 1px 1px;
+  flex-shrink: 0;
+}
+.drag-handle:active { cursor: grabbing; }
+.drag-handle svg { width: 12px; height: 12px; fill: currentColor; }
+.item-num {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.item-inp {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  outline: none;
+  min-width: 0;
+}
+.item-inp::placeholder { color: var(--text-muted); }
+.item-del {
+  width: 22px;
+  height: 22px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.item-del:hover { color: var(--toi-red); background: var(--toi-red-dim); }
+.item-del svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 7px 9px;
+  margin-top: 5px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: left;
+}
+.add-btn:hover { border-color: var(--toi-red); color: var(--toi-red); background: var(--toi-red-dim); }
+.add-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+/* Form controls */
+.form-row {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.form-row-2 { grid-template-columns: 1fr 1fr; }
+.form-row-1 { grid-template-columns: 1fr; }
+.form-row:last-child { margin-bottom: 0; }
+.form-g {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.form-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.025em;
+}
+.form-inp {
+  height: 33px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.13s;
+}
+.form-inp:focus { border-color: var(--toi-red); }
+.form-sel {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  padding-right: 26px;
+  cursor: pointer;
+}
+
+/* Color field */
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 33px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  transition: border-color 0.13s;
+}
+.color-field:focus-within { border-color: var(--toi-red); }
+.swatch-wrap {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.13);
+}
+.swatch-wrap input[type="color"] {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+.swatch-vis {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.hex-inp {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  color: var(--text-secondary);
+  outline: none;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Slider */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slider-side { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; min-width: 30px; }
+.slider-side.r { text-align: right; }
+input[type="range"] {
+  -webkit-appearance: none;
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--toi-red);
+  box-shadow: 0 0 0 3px rgba(215,40,47,0.16);
+}
+input[type="range"]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 4px rgba(215,40,47,0.22); }
+.slider-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  min-width: 48px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Radio options */
+.radio-grp { display: flex; flex-direction: column; gap: 5px; }
+.radio-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.radio-opt:hover { border-color: var(--text-muted); }
+.radio-opt.on { border-color: var(--toi-red); background: var(--selected-bg); }
+.radio-opt input[type=radio] { display: none; }
+.radio-pip {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+.radio-opt.on .radio-pip { border-color: var(--toi-red); background: var(--toi-red); }
+.radio-pip::after { content: ''; display: none; width: 4.5px; height: 4.5px; background: #fff; border-radius: 50%; }
+.radio-opt.on .radio-pip::after { display: block; }
+.radio-lbl { font-size: 12.5px; color: var(--text-primary); font-weight: 500; }
+.radio-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+/* Toggle */
+.tog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  margin-bottom: 12px;
+}
+.tog-lbl { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.tog-sw {
+  width: 34px;
+  height: 19px;
+  border-radius: 99px;
+  background: var(--border);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.18s;
+  flex-shrink: 0;
+  border: none;
+  outline: none;
+}
+.tog-sw.on { background: var(--toi-red); }
+.tog-sw::after {
+  content: '';
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.18s;
+}
+.tog-sw.on::after { transform: translateX(15px); }
+
+/* Badge type grid */
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.badge-opt {
+  padding: 6px 4px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.12s;
+}
+.badge-opt:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.badge-opt.active { border-color: var(--toi-red); color: var(--toi-red); background: var(--selected-bg); }
+
+.form-divider { height: 1px; background: var(--border); margin: 12px 0; }
+.hidden-sec { display: none; }
+.rss-row { display: flex; gap: 6px; }
+.rss-row .form-inp { flex: 1; }
+
+/* ============================================================
+   PANEL — PREVIEW (RIGHT)
+   ============================================================ */
+.panel-right {
+  width: var(--right-w);
+  min-width: var(--right-w);
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.prev-ctrl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.prev-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.dev-tabs {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.dev-tab {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all 0.12s;
+}
+.dev-tab svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.dev-tab:hover { background: var(--hover); color: var(--text-primary); }
+.dev-tab.active { background: var(--toi-red); color: #fff; }
+.dev-tab + .dev-tab { border-left: 1px solid var(--border); }
+.dev-tab.active + .dev-tab { border-left-color: transparent; }
+
+/* Broadcast canvas */
+.broadcast-canvas {
+  flex: 1;
+  background: #0C0D0F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow: hidden;
+  position: relative;
+}
+.broadcast-frame {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  transition: max-width 0.25s ease;
+  background: #0F1115;
+}
+.broadcast-frame.tablet { max-width: 76%; }
+.broadcast-frame.mobile { max-width: 44%; }
+.broadcast-video {
+  flex: 1;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 25% 25%, rgba(160,15,15,0.09) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 65%, rgba(15,35,75,0.14) 0%, transparent 55%),
+    linear-gradient(155deg, #1C1E23 0%, #131518 45%, #0D0F12 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.broadcast-placeholder {
+  text-align: center;
+  opacity: 0.2;
+  user-select: none;
+}
+.broadcast-placeholder svg {
+  width: 30px;
+  height: 30px;
+  stroke: #fff;
+  fill: none;
+  stroke-width: 0.9;
+  display: block;
+  margin: 0 auto 5px;
+}
+.broadcast-placeholder span {
+  display: block;
+  font-size: 8px;
+  color: #fff;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+/* Ticker in preview */
+.p-ticker {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.p-badge {
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  flex-shrink: 0;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+}
+.p-badge-dot {
+  width: 4.5px;
+  height: 4.5px;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.p-track {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.p-inner {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: tickerScroll 25s linear infinite;
+}
+.p-item { display: inline-block; padding: 0 10px; }
+.p-sep { display: inline-block; padding: 0 6px; font-size: 9px; opacity: 0.7; }
+
+/* Preview info */
+.prev-info {
+  border-top: 1px solid var(--border);
+  padding: 8px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.info-stat { font-size: 11px; color: var(--text-muted); }
+.info-stat strong { color: var(--text-secondary); font-weight: 600; }
+
+/* ============================================================
+   BOTTOM LIVE BAR
+   ============================================================ */
+.live-bar {
+  height: var(--bottom-h);
+  min-height: var(--bottom-h);
+  background: #0E0F11;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.live-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px 0 15px;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ADE80;
+  animation: pulse 2s ease-in-out infinite;
+}
+.live-meta-text {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+}
+.live-ticker-widget {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+.live-badge {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.live-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.live-track {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.live-track::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  z-index: 1;
+  pointer-events: none;
+}
+.live-track::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  z-index: 1;
+  pointer-events: none;
+}
+.live-inner {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  animation: tickerScroll 35s linear infinite;
+}
+.live-item { display: inline-block; padding: 0 16px; }
+.live-sep { display: inline-block; padding: 0 4px; opacity: 0.55; }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+.hidden { display: none !important; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1280px) {
+  :root { --right-w: 330px; }
+}
+@media (max-width: 1100px) {
+  :root { --left-w: 240px; --right-w: 300px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-inner, .p-inner { animation: none !important; }
+  .live-dot, .live-badge-dot, .p-badge-dot, .mini-dot { animation: none !important; }
+}
+</style>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logomark">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="16" height="11" rx="1.5" stroke="#fff" stroke-width="1.4"/>
+        <path d="M2 11.5h16" stroke="#fff" stroke-width="1.4"/>
+        <path d="M5 14.5h10M7 17h6" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".6"/>
+        <rect x="3.5" y="4.5" width="5" height="5.5" rx="0.8" fill="rgba(255,255,255,0.25)"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">Ticker Studio</div>
+    </div>
+    <span class="header-sep">|</span>
+    <div class="header-sub">Times of India · Broadcast Ticker Editor</div>
+    <div class="header-chip">BETA</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" id="btnPlayer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Preview in Player
+    </button>
+    <button class="btn btn-primary" id="btnSave" onclick="handleSave()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save Ticker
+    </button>
+  </div>
+</header>
+
+<!-- MAIN STUDIO -->
+<div class="studio">
+
+  <!-- LEFT: Templates -->
+  <aside class="panel-left">
+    <div class="panel-hd">
+      <div class="panel-hd-title">Choose a template</div>
+      <div class="panel-hd-sub">Start with a style and customise it.</div>
+    </div>
+    <div class="tpl-list" id="tplList"></div>
+  </aside>
+
+  <!-- CENTER: Editor -->
+  <main class="panel-center">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="content" onclick="switchTab('content')">Content</button>
+      <button class="tab-btn" data-tab="style" onclick="switchTab('style')">Style</button>
+      <button class="tab-btn" data-tab="text" onclick="switchTab('text')">Text</button>
+      <button class="tab-btn" data-tab="badge" onclick="switchTab('badge')">Badge</button>
+    </div>
+    <div class="tab-body">
+
+      <!-- CONTENT -->
+      <div id="tab-content">
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">Content Source</span></div>
+          <div class="src-tog">
+            <button class="src-opt active" id="srcManual" onclick="setSrc('manual')">Manual</button>
+            <button class="src-opt" id="srcRss" onclick="setSrc('rss')">RSS Feed</button>
+          </div>
+          <div id="manualSec">
+            <div class="items-list" id="itemsList"></div>
+            <button class="add-btn" onclick="addItem()">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add another item
+            </button>
+          </div>
+          <div id="rssSec" class="hidden">
+            <div class="form-g" style="margin-bottom:10px">
+              <label class="form-lbl">Feed URL</label>
+              <div class="rss-row">
+                <input type="url" class="form-inp" id="rssUrl" placeholder="https://feeds.timesofindia.com/..." oninput="st.rssUrl=this.value">
+                <button class="btn btn-ghost" style="flex-shrink:0;height:33px;padding:0 11px;font-size:12px;" onclick="loadRss()">Load</button>
+              </div>
+            </div>
+            <div id="rssFeedItems" class="items-list"></div>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">Ticker Behaviour</span></div>
+          <div class="form-g" style="margin-bottom:12px">
+            <label class="form-lbl">Scroll Speed</label>
+            <div class="slider-row">
+              <span class="slider-side">Slow</span>
+              <input type="range" id="speedSlider" min="1" max="3" step="1" value="2" oninput="setSpeed(this.value)">
+              <span class="slider-side r">Fast</span>
+              <span class="slider-val" id="speedVal">Medium</span>
+            </div>
+          </div>
+          <div class="form-g">
+            <label class="form-lbl">Display Mode</label>
+            <div class="radio-grp">
+              <label class="radio-opt on" id="radioLoop" onclick="setMode('loop')">
+                <input type="radio" name="mode" value="loop" checked>
+                <div class="radio-pip"></div>
+                <div><div class="radio-lbl">Continuous Loop</div><div class="radio-sub">Items scroll indefinitely</div></div>
+              </label>
+              <label class="radio-opt" id="radioSingle" onclick="setMode('single')">
+                <input type="radio" name="mode" value="single">
+                <div class="radio-pip"></div>
+                <div><div class="radio-lbl">Single Pass</div><div class="radio-sub">Scrolls once, then stops</div></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STYLE -->
+      <div id="tab-style" class="hidden">
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">Colours</span></div>
+          <div class="form-row form-row-2">
+            <div class="form-g">
+              <label class="form-lbl">Background</label>
+              <div class="color-field">
+                <div class="swatch-wrap"><input type="color" id="cBg" oninput="setCl('bgColor',this.value)"><div class="swatch-vis" id="sBg"></div></div>
+                <input class="hex-inp" id="hBg" maxlength="7" oninput="setHex('bgColor','cBg','sBg','hBg',this.value)">
+              </div>
+            </div>
+            <div class="form-g">
+              <label class="form-lbl">Text</label>
+              <div class="color-field">
+                <div class="swatch-wrap"><input type="color" id="cTx" oninput="setCl('textColor',this.value)"><div class="swatch-vis" id="sTx"></div></div>
+                <input class="hex-inp" id="hTx" maxlength="7" oninput="setHex('textColor','cTx','sTx','hTx',this.value)">
+              </div>
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-g">
+              <label class="form-lbl">Accent</label>
+              <div class="color-field">
+                <div class="swatch-wrap"><input type="color" id="cAc" oninput="setCl('accentColor',this.value)"><div class="swatch-vis" id="sAc"></div></div>
+                <input class="hex-inp" id="hAc" maxlength="7" oninput="setHex('accentColor','cAc','sAc','hAc',this.value)">
+              </div>
+            </div>
+            <div class="form-g">
+              <label class="form-lbl">Separator</label>
+              <div class="color-field">
+                <div class="swatch-wrap"><input type="color" id="cSp" oninput="setCl('separatorColor',this.value)"><div class="swatch-vis" id="sSp"></div></div>
+                <input class="hex-inp" id="hSp" maxlength="7" oninput="setHex('separatorColor','cSp','sSp','hSp',this.value)">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">Dimensions</span></div>
+          <div class="form-row form-row-2">
+            <div class="form-g">
+              <label class="form-lbl">Ticker Height</label>
+              <select class="form-inp form-sel" id="selHeight" onchange="setDim('height',this.value)">
+                <option value="36px">Compact — 36px</option>
+                <option value="44px">Small — 44px</option>
+                <option value="48px" selected>Standard — 48px</option>
+                <option value="56px">Tall — 56px</option>
+                <option value="64px">Large — 64px</option>
+              </select>
+            </div>
+            <div class="form-g">
+              <label class="form-lbl">Corner Style</label>
+              <select class="form-inp form-sel" id="selRadius" onchange="setDim('cornerRadius',this.value)">
+                <option value="0px" selected>Square</option>
+                <option value="3px">Subtle</option>
+                <option value="6px">Rounded</option>
+                <option value="12px">Soft</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEXT -->
+      <div id="tab-text" class="hidden">
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">Typography</span></div>
+          <div class="form-row form-row-2">
+            <div class="form-g">
+              <label class="form-lbl">Font Family</label>
+              <select class="form-inp form-sel" id="selFont" onchange="setTx('fontFamily',this.value)">
+                <option value="Inter, sans-serif">Inter</option>
+                <option value="Roboto, sans-serif">Roboto</option>
+                <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+                <option value="Merriweather, serif">Merriweather</option>
+                <option value="'Courier New', Courier, monospace">Courier</option>
+              </select>
+            </div>
+            <div class="form-g">
+              <label class="form-lbl">Size</label>
+              <select class="form-inp form-sel" id="selSize" onchange="setTx('fontSize',this.value)">
+                <option value="11px">11px</option>
+                <option value="12px">12px</option>
+                <option value="13px">13px</option>
+                <option value="14px" selected>14px</option>
+                <option value="15px">15px</option>
+                <option value="16px">16px</option>
+                <option value="18px">18px</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-g">
+              <label class="form-lbl">Weight</label>
+              <select class="form-inp form-sel" id="selWeight" onchange="setTx('fontWeight',this.value)">
+                <option value="300">Light</option>
+                <option value="400">Regular</option>
+                <option value="500" selected>Medium</option>
+                <option value="600">Semibold</option>
+                <option value="700">Bold</option>
+                <option value="800">Extra Bold</option>
+              </select>
+            </div>
+            <div class="form-g">
+              <label class="form-lbl">Letter Spacing</label>
+              <select class="form-inp form-sel" id="selLS" onchange="setTx('letterSpacing',this.value)">
+                <option value="-0.02em">Tight</option>
+                <option value="0em" selected>Normal</option>
+                <option value="0.03em">Wide</option>
+                <option value="0.06em">Wider</option>
+                <option value="0.1em">Widest</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row form-row-1">
+            <div class="form-g">
+              <label class="form-lbl">Text Transform</label>
+              <select class="form-inp form-sel" id="selTT" onchange="setTx('textTransform',this.value)">
+                <option value="none" selected>As typed</option>
+                <option value="uppercase">UPPERCASE</option>
+                <option value="lowercase">lowercase</option>
+                <option value="capitalize">Title Case</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BADGE -->
+      <div id="tab-badge" class="hidden">
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">Badge</span></div>
+          <div class="tog-row">
+            <span class="tog-lbl">Show badge</span>
+            <button class="tog-sw on" id="togBadge" onclick="toggleBadge()" aria-label="Toggle badge"></button>
+          </div>
+          <div id="badgeCtrl">
+            <div class="form-g" style="margin-bottom:10px">
+              <label class="form-lbl">Badge Type</label>
+              <div class="badge-grid" id="badgeGrid">
+                <div class="badge-opt active" data-bt="LIVE" onclick="setBadgeType('LIVE')">LIVE</div>
+                <div class="badge-opt" data-bt="BREAKING" onclick="setBadgeType('BREAKING')">BREAKING</div>
+                <div class="badge-opt" data-bt="ALERT" onclick="setBadgeType('ALERT')">ALERT</div>
+                <div class="badge-opt" data-bt="EXCLUSIVE" onclick="setBadgeType('EXCLUSIVE')">EXCLUSIVE</div>
+                <div class="badge-opt" data-bt="SPECIAL" onclick="setBadgeType('SPECIAL')">SPECIAL</div>
+                <div class="badge-opt" data-bt="CUSTOM" onclick="setBadgeType('CUSTOM')">CUSTOM</div>
+              </div>
+            </div>
+            <div class="form-g" id="customBadgeGrp" style="display:none;margin-bottom:10px">
+              <label class="form-lbl">Custom Text</label>
+              <input type="text" class="form-inp" id="customBadgeTxt" placeholder="Enter badge text…" maxlength="20" oninput="st.badge.customText=this.value;refreshAll()">
+            </div>
+            <div class="form-divider"></div>
+            <div class="form-row form-row-2">
+              <div class="form-g">
+                <label class="form-lbl">Badge Background</label>
+                <div class="color-field">
+                  <div class="swatch-wrap"><input type="color" id="cBBg" oninput="setBadgeCl('bgColor',this.value)"><div class="swatch-vis" id="sBBg"></div></div>
+                  <input class="hex-inp" id="hBBg" maxlength="7" oninput="setBadgeHex('bgColor','cBBg','sBBg','hBBg',this.value)">
+                </div>
+              </div>
+              <div class="form-g">
+                <label class="form-lbl">Badge Text</label>
+                <div class="color-field">
+                  <div class="swatch-wrap"><input type="color" id="cBTx" oninput="setBadgeCl('textColor',this.value)"><div class="swatch-vis" id="sBTx"></div></div>
+                  <input class="hex-inp" id="hBTx" maxlength="7" oninput="setBadgeHex('textColor','cBTx','sBTx','hBTx',this.value)">
+                </div>
+              </div>
+            </div>
+            <div class="form-row form-row-1" style="margin-top:10px">
+              <div class="form-g">
+                <label class="form-lbl">Badge Weight</label>
+                <select class="form-inp form-sel" id="selBW" onchange="st.badge.fontWeight=this.value;refreshAll()">
+                  <option value="600">Semibold</option>
+                  <option value="700" selected>Bold</option>
+                  <option value="800">Extra Bold</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-body -->
+  </main>
+
+  <!-- RIGHT: Preview -->
+  <aside class="panel-right">
+    <div class="prev-ctrl">
+      <span class="prev-label">Preview</span>
+      <div class="dev-tabs">
+        <button class="dev-tab active" data-dev="desktop" onclick="setDev('desktop')">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          Desktop
+        </button>
+        <button class="dev-tab" data-dev="tablet" onclick="setDev('tablet')">
+          <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>
+          Tablet
+        </button>
+        <button class="dev-tab" data-dev="mobile" onclick="setDev('mobile')">
+          <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>
+          Mobile
+        </button>
+      </div>
+    </div>
+    <div class="broadcast-canvas">
+      <div class="broadcast-frame" id="broadcastFrame">
+        <div class="broadcast-video">
+          <div class="broadcast-placeholder">
+            <svg viewBox="0 0 48 48">
+              <rect x="4" y="8" width="40" height="26" rx="2"/>
+              <path d="M16 38h16M24 34v4"/>
+              <path d="M12 24l8 5 6-4 8 7"/>
+              <circle cx="34" cy="17" r="3"/>
+            </svg>
+            <span>Video Preview</span>
+          </div>
+        </div>
+        <div class="p-ticker" id="pTicker">
+          <div class="p-badge" id="pBadge">
+            <div class="p-badge-dot" id="pBadgeDot"></div>
+            <span id="pBadgeTxt">LIVE</span>
+          </div>
+          <div class="p-track">
+            <div class="p-inner" id="pInner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="prev-info">
+      <span class="info-stat">Items: <strong id="iItems">5</strong></span>
+      <span class="info-stat">Height: <strong id="iHeight">48px</strong></span>
+      <span class="info-stat">Speed: <strong id="iSpeed">Medium</strong></span>
+    </div>
+  </aside>
+
+</div><!-- /studio -->
+
+<!-- BOTTOM LIVE BAR -->
+<div class="live-bar">
+  <div class="live-meta">
+    <div class="live-dot"></div>
+    <span class="live-meta-text">Live Preview</span>
+  </div>
+  <div class="live-ticker-widget" id="liveWidget">
+    <div class="live-badge" id="liveBadge">
+      <div class="live-badge-dot" id="liveBadgeDot"></div>
+      <span id="liveBadgeTxt">LIVE</span>
+    </div>
+    <div class="live-track">
+      <div class="live-inner" id="liveInner"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+const st = {
+  template: 'classic',
+  items: [
+    'Breaking news: India\'s GDP growth hits 7.4% in Q2, beats forecast',
+    'Stock markets close higher — Sensex surges 620 pts, Nifty at record high',
+    'India vs Australia: Live scorecard — IND 278/4 after 45 overs',
+    'Cabinet approves new renewable energy policy targeting 500 GW by 2030',
+    'Delhi weather: Heavy rains expected this week, IMD issues orange alert',
+  ],
+  badge: { show: true, type: 'LIVE', customText: '', bgColor: '#D7282F', textColor: '#FFFFFF', fontWeight: '700' },
+  style: { bgColor: '#FFFFFF', textColor: '#1A1714', accentColor: '#D7282F', separatorColor: '#D7282F', height: '48px', cornerRadius: '0px', bgGradient: null },
+  text: { fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: '500', letterSpacing: '0em', textTransform: 'none' },
+  behavior: { speed: 2, mode: 'loop' },
+  activeTab: 'content',
+  device: 'desktop',
+  rssUrl: '',
+};
+
+/* ============================================================
+   TEMPLATES
+   ============================================================ */
+const TPLS = [
+  { id: 'classic', name: 'Classic', desc: 'White · Red LIVE badge',
+    style: { bgColor: '#FFFFFF', textColor: '#1A1714', accentColor: '#D7282F', separatorColor: '#D7282F', height: '48px', cornerRadius: '0px', bgGradient: null },
+    badge: { show: true, type: 'LIVE', bgColor: '#D7282F', textColor: '#FFFFFF', fontWeight: '700' },
+    text: { fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: '500', letterSpacing: '0em', textTransform: 'none' },
+    mini: { bg: '#FFFFFF', tc: '#1A1714', bb: '#D7282F', bt: '#fff', border: '2px solid #D7282F', badge: 'LIVE' },
+  },
+  { id: 'modern', name: 'Modern', desc: 'Dark · Bold white text',
+    style: { bgColor: '#111827', textColor: '#F9FAFB', accentColor: '#D7282F', separatorColor: '#374151', height: '52px', cornerRadius: '0px', bgGradient: null },
+    badge: { show: true, type: 'LIVE', bgColor: '#D7282F', textColor: '#FFFFFF', fontWeight: '700' },
+    text: { fontFamily: 'Inter, sans-serif', fontSize: '15px', fontWeight: '600', letterSpacing: '0em', textTransform: 'none' },
+    mini: { bg: '#111827', tc: '#F9FAFB', bb: '#D7282F', bt: '#fff', border: 'none', badge: 'LIVE' },
+  },
+  { id: 'minimal', name: 'Minimal', desc: 'Clean · Understated style',
+    style: { bgColor: '#FAFAF8', textColor: '#374151', accentColor: '#9CA3AF', separatorColor: '#D1D5DB', height: '44px', cornerRadius: '3px', bgGradient: null },
+    badge: { show: true, type: 'LIVE', bgColor: '#374151', textColor: '#FFFFFF', fontWeight: '600' },
+    text: { fontFamily: 'Inter, sans-serif', fontSize: '13px', fontWeight: '400', letterSpacing: '0em', textTransform: 'none' },
+    mini: { bg: '#FAFAF8', tc: '#374151', bb: '#374151', bt: '#fff', border: '1px solid #D1D5DB', badge: 'LIVE' },
+  },
+  { id: 'breaking', name: 'Breaking', desc: 'High impact · Red field',
+    style: { bgColor: '#D7282F', textColor: '#FFFFFF', accentColor: '#FFFFFF', separatorColor: 'rgba(255,255,255,0.35)', height: '56px', cornerRadius: '0px', bgGradient: null },
+    badge: { show: true, type: 'BREAKING', bgColor: '#1A1714', textColor: '#FFFFFF', fontWeight: '800' },
+    text: { fontFamily: 'Inter, sans-serif', fontSize: '15px', fontWeight: '700', letterSpacing: '0em', textTransform: 'none' },
+    mini: { bg: '#D7282F', tc: '#fff', bb: '#1A1714', bt: '#fff', border: 'none', badge: 'BREAKING' },
+  },
+  { id: 'alert', name: 'Alert', desc: 'Urgent · Amber accent',
+    style: { bgColor: '#1A1714', textColor: '#FFF7ED', accentColor: '#F59E0B', separatorColor: '#F59E0B', height: '52px', cornerRadius: '0px', bgGradient: null },
+    badge: { show: true, type: 'ALERT', bgColor: '#F59E0B', textColor: '#1A1714', fontWeight: '700' },
+    text: { fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: '600', letterSpacing: '0.01em', textTransform: 'uppercase' },
+    mini: { bg: '#1A1714', tc: '#FFF7ED', bb: '#F59E0B', bt: '#1A1714', border: '2px solid #F59E0B', badge: 'ALERT' },
+  },
+  { id: 'clean', name: 'Clean', desc: 'Editorial · No badge',
+    style: { bgColor: '#FFFFFF', textColor: '#1A1714', accentColor: '#9CA3AF', separatorColor: '#E2DED8', height: '40px', cornerRadius: '0px', bgGradient: null },
+    badge: { show: false, type: 'LIVE', bgColor: '#D7282F', textColor: '#FFFFFF', fontWeight: '700' },
+    text: { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: '13px', fontWeight: '400', letterSpacing: '0em', textTransform: 'none' },
+    mini: { bg: '#FFFFFF', tc: '#1A1714', bb: null, bt: null, border: '1px solid #E2DED8', badge: null },
+  },
+  { id: 'gradient', name: 'Gradient', desc: 'Expressive · TOI signature',
+    style: { bgColor: '#D7282F', textColor: '#FFFFFF', accentColor: '#FFFFFF', separatorColor: 'rgba(255,255,255,0.4)', height: '52px', cornerRadius: '0px', bgGradient: 'linear-gradient(90deg,#D7282F 0%,#5A1010 100%)' },
+    badge: { show: true, type: 'LIVE', bgColor: 'rgba(255,255,255,0.15)', textColor: '#FFFFFF', fontWeight: '700' },
+    text: { fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: '600', letterSpacing: '0.01em', textTransform: 'none' },
+    mini: { bg: 'linear-gradient(90deg,#D7282F 0%,#5A1010 100%)', tc: '#fff', bb: 'rgba(255,255,255,0.18)', bt: '#fff', border: 'none', badge: 'LIVE', isGrad: true },
+  },
+];
+
+const SPEEDS = {
+  1: { label: 'Slow',   pDur: 42000, lDur: 60000 },
+  2: { label: 'Medium', pDur: 25000, lDur: 36000 },
+  3: { label: 'Fast',   pDur: 13000, lDur: 18000 },
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const G = id => document.getElementById(id);
+const QA = sel => document.querySelectorAll(sel);
+const esc = s => s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const isHex = v => /^#[0-9A-Fa-f]{6}$/.test(v);
+const isSafeColor = v => !v.startsWith('rgba') && !v.startsWith('linear-gradient') && isHex(v);
+
+/* ============================================================
+   DRAG & DROP
+   ============================================================ */
+let dragI = null;
+function dStart(e, i) { dragI = i; setTimeout(() => e.target.closest('.ticker-item').classList.add('dragging'), 0); }
+function dEnd(e) { e.target.closest('.ticker-item').classList.remove('dragging'); QA('.ticker-item').forEach(el => el.classList.remove('drag-over')); dragI = null; }
+function dOver(e, i) { e.preventDefault(); QA('.ticker-item').forEach(el => el.classList.remove('drag-over')); G('itemsList').children[i].classList.add('drag-over'); }
+function dDrop(e, i) { e.preventDefault(); if (dragI === null || dragI === i) return; const m = st.items.splice(dragI, 1)[0]; st.items.splice(i, 0, m); renderItems(); refreshAll(); }
+
+/* ============================================================
+   RENDER ITEMS
+   ============================================================ */
+function renderItems() {
+  const c = G('itemsList'); c.innerHTML = '';
+  st.items.forEach((txt, i) => {
+    const d = document.createElement('div');
+    d.className = 'ticker-item';
+    d.draggable = true;
+    d.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder"><svg viewBox="0 0 14 14" fill="currentColor"><circle cx="4" cy="3" r="1.1"/><circle cx="4" cy="7" r="1.1"/><circle cx="4" cy="11" r="1.1"/><circle cx="10" cy="3" r="1.1"/><circle cx="10" cy="7" r="1.1"/><circle cx="10" cy="11" r="1.1"/></svg></span>
+      <span class="item-num">${i+1}</span>
+      <input class="item-inp" value="${esc(txt)}" placeholder="Enter headline…" data-i="${i}" oninput="st.items[${i}]=this.value;refreshAll()">
+      <button class="item-del" onclick="delItem(${i})" title="Remove"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    `;
+    d.addEventListener('dragstart', e => dStart(e, i));
+    d.addEventListener('dragend', dEnd);
+    d.addEventListener('dragover', e => dOver(e, i));
+    d.addEventListener('drop', e => dDrop(e, i));
+    c.appendChild(d);
+  });
+  G('iItems').textContent = st.items.length;
+}
+function addItem() {
+  st.items.push('');
+  renderItems();
+  refreshAll();
+  setTimeout(() => { const ins = QA('.item-inp'); if (ins.length) ins[ins.length-1].focus(); }, 40);
+}
+function delItem(i) {
+  if (st.items.length <= 1) return;
+  st.items.splice(i, 1);
+  renderItems();
+  refreshAll();
+}
+
+/* ============================================================
+   TEMPLATES
+   ============================================================ */
+function renderTemplates() {
+  const c = G('tplList'); c.innerHTML = '';
+  TPLS.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'tpl-card' + (st.template === t.id ? ' selected' : '');
+    card.dataset.id = t.id;
+    card.onclick = () => applyTemplate(t.id);
+    const m = t.mini;
+    const bgStyle = m.isGrad ? `background: ${m.bg}` : `background: ${m.bg}`;
+    const badgeHtml = m.bb ? `<div class="mini-badge" style="background:${m.bb};color:${m.bt};">${t.badge.type === 'LIVE' ? '<div class="mini-dot" style="background:rgba(255,255,255,0.8)"></div>' : ''}${m.badge}</div>` : '';
+    card.innerHTML = `
+      <div class="tpl-preview-bg">
+        <div class="mini-ticker" style="${bgStyle};border-top:${m.border||'none'};">
+          ${badgeHtml}
+          <div class="mini-text" style="color:${m.tc};font-family:${t.text.fontFamily};font-weight:${t.text.fontWeight};">
+            Breaking news from India <span class="mini-sep" style="color:${m.tc}">◆</span> Markets hit record high
+          </div>
+        </div>
+      </div>
+      <div class="tpl-meta">
+        <div class="tpl-meta-info"><div class="tpl-name">${t.name}</div><div class="tpl-desc">${t.desc}</div></div>
+        <div class="tpl-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      </div>
+    `;
+    c.appendChild(card);
+  });
+
+  // Divider + Scratch
+  const div = document.createElement('div'); div.className = 'tpl-divider'; c.appendChild(div);
+  const sc = document.createElement('div');
+  sc.className = 'tpl-card tpl-scratch' + (st.template === 'scratch' ? ' selected' : '');
+  sc.dataset.id = 'scratch';
+  sc.onclick = () => applyTemplate('scratch');
+  sc.innerHTML = `
+    <div class="tpl-scratch-preview">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Start from scratch
+    </div>
+    <div class="tpl-meta">
+      <div class="tpl-meta-info"><div class="tpl-name">Custom</div><div class="tpl-desc">Fully custom ticker</div></div>
+      <div class="tpl-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+    </div>
+  `;
+  c.appendChild(sc);
+}
+
+function applyTemplate(id) {
+  st.template = id;
+  const t = TPLS.find(t => t.id === id);
+  if (t) {
+    Object.assign(st.style, JSON.parse(JSON.stringify(t.style)));
+    Object.assign(st.badge, JSON.parse(JSON.stringify(t.badge)));
+    Object.assign(st.text, JSON.parse(JSON.stringify(t.text)));
+    syncForm();
+  }
+  QA('.tpl-card').forEach(c => c.classList.toggle('selected', c.dataset.id === id));
+  refreshAll();
+}
+
+/* ============================================================
+   FORM SYNC
+   ============================================================ */
+function syncForm() {
+  // Colors
+  syncCF('cBg','sBg','hBg', isSafeColor(st.style.bgColor) ? st.style.bgColor : '#D7282F');
+  syncCF('cTx','sTx','hTx', isSafeColor(st.style.textColor) ? st.style.textColor : '#FFFFFF');
+  syncCF('cAc','sAc','hAc', isSafeColor(st.style.accentColor) ? st.style.accentColor : '#D7282F');
+  syncCF('cSp','sSp','hSp', isSafeColor(st.style.separatorColor) ? st.style.separatorColor : '#E2DED8');
+  // Dims
+  const selH = G('selHeight'); if (selH) { const o = [...selH.options].find(o=>o.value===st.style.height); if(o) selH.value = st.style.height; }
+  const selR = G('selRadius'); if (selR) selR.value = st.style.cornerRadius;
+  // Text
+  const sF = G('selFont'); if (sF) sF.value = st.text.fontFamily;
+  const sS = G('selSize'); if (sS) sS.value = st.text.fontSize;
+  const sW = G('selWeight'); if (sW) sW.value = st.text.fontWeight;
+  const sL = G('selLS'); if (sL) sL.value = st.text.letterSpacing;
+  const sT = G('selTT'); if (sT) sT.value = st.text.textTransform;
+  // Badge toggle
+  const tog = G('togBadge'); if (tog) tog.classList.toggle('on', st.badge.show);
+  G('badgeCtrl').style.opacity = st.badge.show ? '1' : '0.45';
+  G('badgeCtrl').style.pointerEvents = st.badge.show ? '' : 'none';
+  // Badge type
+  QA('.badge-opt').forEach(el => el.classList.toggle('active', el.dataset.bt === st.badge.type));
+  G('customBadgeGrp').style.display = st.badge.type === 'CUSTOM' ? '' : 'none';
+  syncCF('cBBg','sBBg','hBBg', isSafeColor(st.badge.bgColor) ? st.badge.bgColor : '#D7282F');
+  syncCF('cBTx','sBTx','hBTx', isSafeColor(st.badge.textColor) ? st.badge.textColor : '#FFFFFF');
+  const selBW = G('selBW'); if (selBW) selBW.value = st.badge.fontWeight;
+}
+
+function syncCF(cId, sId, hId, hex) {
+  try { const ci=G(cId); if(ci) ci.value=hex; } catch(e){}
+  const si=G(sId); if(si) si.style.background=hex;
+  const hi=G(hId); if(hi) hi.value=hex;
+}
+
+/* ============================================================
+   UPDATE HANDLERS
+   ============================================================ */
+function setCl(k, v) {
+  st.style[k] = v;
+  const M = {bgColor:['sBg','hBg'],textColor:['sTx','hTx'],accentColor:['sAc','hAc'],separatorColor:['sSp','hSp']};
+  const [s,h]=M[k]||[];
+  if(s){const e=G(s);if(e)e.style.background=v;}
+  if(h){const e=G(h);if(e)e.value=v;}
+  refreshAll();
+}
+function setHex(k,ci,si,hi,v) {
+  if(!isHex(v)) return;
+  st.style[k]=v;
+  try{G(ci).value=v;}catch(e){}
+  const s=G(si);if(s)s.style.background=v;
+  refreshAll();
+}
+function setDim(k,v) { st.style[k]=v; refreshAll(); }
+function setTx(k,v) { st.text[k]=v; refreshAll(); }
+function setBadgeCl(k,v) {
+  st.badge[k]=v;
+  const M={bgColor:['sBBg','hBBg'],textColor:['sBTx','hBTx']};
+  const [s,h]=M[k]||[];
+  if(s){const e=G(s);if(e)e.style.background=v;}
+  if(h){const e=G(h);if(e)e.value=v;}
+  refreshAll();
+}
+function setBadgeHex(k,ci,si,hi,v) {
+  if(!isHex(v)) return;
+  st.badge[k]=v;
+  try{G(ci).value=v;}catch(e){}
+  const s=G(si);if(s)s.style.background=v;
+  refreshAll();
+}
+function toggleBadge() {
+  st.badge.show=!st.badge.show;
+  G('togBadge').classList.toggle('on',st.badge.show);
+  G('badgeCtrl').style.opacity=st.badge.show?'1':'0.45';
+  G('badgeCtrl').style.pointerEvents=st.badge.show?'':'none';
+  refreshAll();
+}
+function setBadgeType(t) {
+  st.badge.type=t;
+  QA('.badge-opt').forEach(el=>el.classList.toggle('active',el.dataset.bt===t));
+  G('customBadgeGrp').style.display=t==='CUSTOM'?'':'none';
+  refreshAll();
+}
+function setSrc(s) {
+  st.src=s;
+  G('srcManual').classList.toggle('active',s==='manual');
+  G('srcRss').classList.toggle('active',s==='rss');
+  G('manualSec').classList.toggle('hidden',s!=='manual');
+  G('rssSec').classList.toggle('hidden',s!=='rss');
+}
+function loadRss() {
+  const headlines = [
+    'PM holds high-level security review amid regional tensions',
+    'Supreme Court reserves judgment on key electoral bonds case',
+    'Sensex closes 450 points higher; IT and banking stocks lead gains',
+    'India records 7.4% GDP growth in Q2, beats analyst expectations',
+    'Delhi: Heavy rain warning for next 48 hours — IMD orange alert',
+  ];
+  st.items = headlines;
+  renderItems();
+  refreshAll();
+  const c=G('rssFeedItems');
+  if(c) c.innerHTML='<div style="padding:8px 0;font-size:11px;color:var(--text-muted);">✓ Loaded 5 headlines from feed</div>';
+}
+function setSpeed(v) {
+  st.behavior.speed=parseInt(v);
+  const sp=SPEEDS[v]||SPEEDS[2];
+  G('speedVal').textContent=sp.label;
+  G('iSpeed').textContent=sp.label;
+  updateSpeeds();
+}
+function setMode(m) {
+  st.behavior.mode=m;
+  ['radioLoop','radioSingle'].forEach(id=>G(id).classList.remove('on'));
+  G(m==='loop'?'radioLoop':'radioSingle').classList.add('on');
+  const iter=m==='loop'?'infinite':'1';
+  const li=G('liveInner');if(li)li.style.animationIterationCount=iter;
+  const pi=G('pInner');if(pi)pi.style.animationIterationCount=iter;
+}
+function setDev(d) {
+  st.device=d;
+  QA('.dev-tab').forEach(el=>el.classList.toggle('active',el.dataset.dev===d));
+  const f=G('broadcastFrame');
+  f.className='broadcast-frame'+(d!=='desktop'?' '+d:'');
+}
+function switchTab(t) {
+  st.activeTab=t;
+  QA('.tab-btn').forEach(el=>el.classList.toggle('active',el.dataset.tab===t));
+  ['content','style','text','badge'].forEach(id=>G('tab-'+id).classList.toggle('hidden',id!==t));
+}
+
+/* ============================================================
+   BADGE LABEL
+   ============================================================ */
+function badgeLabel() {
+  if(st.badge.type==='CUSTOM') return st.badge.customText||'CUSTOM';
+  return st.badge.type;
+}
+
+/* ============================================================
+   PREVIEW TICKER
+   ============================================================ */
+function refreshPreview() {
+  const s=st.style, b=st.badge, tx=st.text;
+  const ticker=G('pTicker');
+  const badge=G('pBadge');
+  const bdot=G('pBadgeDot');
+  const btxt=G('pBadgeTxt');
+  const inner=G('pInner');
+
+  // Ticker container
+  ticker.style.background=s.bgGradient||s.bgColor;
+  ticker.style.height=s.height;
+  ticker.style.borderRadius=s.cornerRadius==='0px'?'0':`0 0 ${s.cornerRadius} ${s.cornerRadius}`;
+
+  // Badge
+  badge.style.display=b.show?'flex':'none';
+  badge.style.background=b.bgColor;
+  badge.style.color=b.textColor;
+  badge.style.fontWeight=b.fontWeight;
+  bdot.style.display=b.type==='LIVE'?'':'none';
+  bdot.style.background=b.textColor;
+  btxt.textContent=badgeLabel();
+
+  // Items
+  const items=st.items.filter(x=>x.trim());
+  const sepC=s.separatorColor.startsWith('rgba')?s.separatorColor:s.separatorColor;
+  const itemsHtml=items.map(x=>`<span class="p-item" style="font-family:${tx.fontFamily};font-size:${tx.fontSize};font-weight:${tx.fontWeight};letter-spacing:${tx.letterSpacing};text-transform:${tx.textTransform};color:${s.textColor};">${esc(x)}</span><span class="p-sep" style="color:${sepC};">◆</span>`).join('');
+  inner.innerHTML=itemsHtml+itemsHtml;
+
+  // Info
+  G('iHeight').textContent=s.height;
+}
+
+/* ============================================================
+   LIVE TICKER BAR
+   ============================================================ */
+function refreshLive() {
+  const s=st.style, b=st.badge, tx=st.text;
+  const widget=G('liveWidget');
+  const lbadge=G('liveBadge');
+  const ldot=G('liveBadgeDot');
+  const lbtxt=G('liveBadgeTxt');
+  const linner=G('liveInner');
+
+  // Live widget background matches ticker
+  widget.style.background=s.bgGradient||s.bgColor;
+
+  // Badge
+  lbadge.style.display=b.show?'flex':'none';
+  lbadge.style.background=b.bgColor;
+  lbadge.style.color=b.textColor;
+  lbadge.style.fontWeight=b.fontWeight;
+  ldot.style.display=b.type==='LIVE'?'':'none';
+  ldot.style.background=b.textColor;
+  lbtxt.textContent=badgeLabel();
+
+  // Fade masks on track
+  const lt = G('liveWidget').querySelector('.live-track');
+  if(lt) {
+    const fadeC = s.bgGradient ? 'rgba(0,0,0,0)' : s.bgColor;
+    lt.style.setProperty('--fade', fadeC);
+  }
+
+  // Items
+  const items=st.items.filter(x=>x.trim());
+  const sepC=s.separatorColor.startsWith('rgba')?s.separatorColor:s.separatorColor;
+  const html=items.map(x=>`<span class="live-item" style="font-family:${tx.fontFamily};font-size:${tx.fontSize};font-weight:${tx.fontWeight};letter-spacing:${tx.letterSpacing};text-transform:${tx.textTransform};color:${s.textColor};">${esc(x)}</span><span class="live-sep" style="color:${sepC};">◆</span>`).join('');
+  linner.innerHTML=html+html;
+}
+
+function updateSpeeds() {
+  const sp=SPEEDS[st.behavior.speed]||SPEEDS[2];
+  const pi=G('pInner');if(pi)pi.style.animationDuration=sp.pDur+'ms';
+  const li=G('liveInner');if(li)li.style.animationDuration=sp.lDur+'ms';
+}
+
+function refreshAll() {
+  refreshPreview();
+  refreshLive();
+  updateSpeeds();
+}
+
+/* ============================================================
+   SAVE
+   ============================================================ */
+function handleSave() {
+  const btn=G('btnSave');
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg> Saved!';
+  btn.style.background='#15803D';
+  setTimeout(()=>{
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Ticker';
+    btn.style.background='';
+  },2600);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  renderTemplates();
+  renderItems();
+  syncForm();
+  refreshAll();
+  G('speedVal').textContent=SPEEDS[st.behavior.speed].label;
+  G('iSpeed').textContent=SPEEDS[st.behavior.speed].label;
+}
+init();
+</script>
