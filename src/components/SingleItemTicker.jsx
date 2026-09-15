@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 // Cycles through items one at a time, holding each for `durationSec`,
 // transitioning between them with the chosen `animation`. Stops after the last item.
-export default function SingleItemTicker({ items, animation, durationSec, itemStyle, className }) {
+const ALIGN_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' };
+
+export default function SingleItemTicker({ items, animation, durationSec, itemStyle, className, align = 'left' }) {
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState('in'); // 'in' | 'hold' | 'out'
   const key = items.join('|');
@@ -21,8 +23,14 @@ export default function SingleItemTicker({ items, animation, durationSec, itemSt
     const transMs = 420;
     const timers = [];
 
+    // Fade/slide/flip are CSS *transitions* — they just need the 'in' class applied
+    // for one tick before flipping to 'hold' so the transition fires. Typewriter is a
+    // discrete *keyframe animation* (steps reveal) — flipping to 'hold' early cancels
+    // it mid-reveal, so give it its full 0.6s to actually type out.
+    const inMs = animation === 'typewriter' ? 620 : 30;
+
     setPhase('in');
-    timers.push(setTimeout(() => setPhase('hold'), 30));
+    timers.push(setTimeout(() => setPhase('hold'), inMs));
 
     if (safeIndex < items.length - 1) {
       timers.push(setTimeout(() => setPhase('out'), holdMs));
@@ -30,14 +38,14 @@ export default function SingleItemTicker({ items, animation, durationSec, itemSt
     }
 
     return () => timers.forEach(clearTimeout);
-  }, [safeIndex, key, durationSec]);
+  }, [safeIndex, key, durationSec, animation]);
 
   if (items.length === 0) return null;
 
   const cls = `single-item anim-${animation} phase-${phase}${className ? ' ' + className : ''}`;
 
   return (
-    <div className="single-item-wrap">
+    <div className="single-item-wrap" style={{ justifyContent: ALIGN_JUSTIFY[align] || 'flex-start' }}>
       <span key={safeIndex} className={cls} style={itemStyle}>{items[safeIndex]}</span>
     </div>
   );

@@ -1,4 +1,24 @@
-export default function Header({ onSave, saved, onBack }) {
+import { useState } from 'react';
+import { playerUrl } from '../utils.js';
+
+export default function Header({ st, onSave, saved, onBack }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    const url = playerUrl(st);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.prompt('Copy this URL:', url);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleOpen = () => {
+    window.open(playerUrl(st), '_blank', 'noopener');
+  };
+
   return (
     <header className="header">
       <div className="header-brand">
@@ -18,14 +38,19 @@ export default function Header({ onSave, saved, onBack }) {
         <div>
           <div className="header-title">Graphics Studio</div>
         </div>
-        <span className="header-sep">|</span>
-        <div className="header-sub">Times of India · Broadcast Graphics Editor</div>
-        <div className="header-chip">BETA</div>
       </div>
       <div className="header-actions">
-        <button className="btn btn-ghost" id="btnPlayer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-          Preview in Player
+        <button className="btn btn-ghost" onClick={handleCopy} title="Copy the standalone ticker URL">
+          {copied ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12" /></svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+          )}
+          {copied ? 'Copied!' : 'Copy URL'}
+        </button>
+        <button className="btn btn-ghost" onClick={handleOpen} title="Open the standalone ticker in a new tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+          Open URL
         </button>
         <button className="btn btn-primary" id="btnSave" onClick={onSave} style={saved ? { background: '#15803D' } : undefined}>
           {saved ? (

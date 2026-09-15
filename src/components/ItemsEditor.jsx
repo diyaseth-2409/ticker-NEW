@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 // Single textarea, one ticker item per line — numbered gutter mirrors line count.
-export default function ItemsEditor({ items, onChange }) {
+export default function ItemsEditor({ items, onChange, readOnly = false }) {
   const text = items.join('\n');
   const gutterRef = useRef(null);
   const taRef = useRef(null);
@@ -19,7 +19,7 @@ export default function ItemsEditor({ items, onChange }) {
   };
 
   return (
-    <div className="items-editor">
+    <div className={'items-editor' + (readOnly ? ' items-editor-readonly' : '')}>
       <div className="items-editor-gutter" ref={gutterRef}>
         {Array.from({ length: lineCount }, (_, i) => (
           <div className="items-editor-linenum" key={i}>{i + 1}</div>
@@ -34,6 +34,8 @@ export default function ItemsEditor({ items, onChange }) {
         onScroll={syncScroll}
         spellCheck={false}
         rows={Math.max(lineCount, 6)}
+        readOnly={readOnly}
+        title={readOnly ? 'Fetched from source — edit not allowed. Change the URL and re-validate to update.' : undefined}
       />
     </div>
   );

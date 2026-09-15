@@ -29,20 +29,35 @@ export default function TemplateGallery({ onPick }) {
           {TPLS.map((t) => {
             const m = t.mini;
             const badgeHtml = m.bb ? (
-              <div className="mini-badge" style={{ background: m.bb, color: m.bt }}>
+              <div className={'mini-badge' + (t.style.badgeShape === 'wedge' ? ' mini-badge-wedge' : '')} style={{ background: m.bb, color: m.bt }}>
                 {t.badge.type === 'LIVE' && <div className="mini-dot" style={{ background: 'rgba(255,255,255,0.8)' }}></div>}
                 {m.badge}
               </div>
             ) : null;
+            const isDd = t.style.layout === 'double-decker';
             return (
               <button key={t.id} className="gallery-card" onClick={() => onPick(t.id)}>
                 <div className="tpl-preview-bg gallery-preview-bg">
-                  <div className="mini-ticker" style={{ background: m.bg, borderTop: m.border || 'none' }}>
-                    {badgeHtml}
-                    <div className="mini-text" style={{ color: m.tc, fontFamily: t.text.fontFamily, fontWeight: t.text.fontWeight }}>
-                      Breaking news from India <span className="mini-sep" style={{ color: m.tc }}>◆</span> Markets hit record high
+                  {isDd ? (
+                    <div className="mini-ticker mini-ticker-dd">
+                      <div className="mini-dd-top" style={{ background: m.bb, color: m.bt }}>
+                        <span className="mini-dd-top-text">{m.badge}</span>
+                      </div>
+                      <div className="mini-dd-bottom" style={{ background: m.bg }}>
+                        <div className="mini-dd-tag" style={{ background: t.style.accentColor || '#1A1714', color: '#fff' }}>24/7</div>
+                        <div className="mini-text" style={{ color: m.tc, fontFamily: t.text.fontFamily, fontWeight: t.text.fontWeight }}>
+                          Breaking news from India <span className="mini-sep" style={{ color: m.tc }}>◆</span> Markets hit record high
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mini-ticker" style={{ background: m.bg, borderTop: m.border || 'none' }}>
+                      {badgeHtml}
+                      <div className="mini-text" style={{ color: m.tc, fontFamily: t.text.fontFamily, fontWeight: t.text.fontWeight }}>
+                        Breaking news from India <span className="mini-sep" style={{ color: m.tc }}>◆</span> Markets hit record high
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="tpl-meta">
                   <div className="tpl-meta-info">

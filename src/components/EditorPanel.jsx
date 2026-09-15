@@ -1,10 +1,10 @@
-import ContentTab from './ContentTab.jsx';
+import ContentSource from './ContentSource.jsx';
 
 export default function EditorPanel({ st, setSt }) {
   return (
     <main className="panel-center">
       <div className="tab-body">
-        <ContentTab st={st} setSt={setSt} />
+        <ContentSource st={st} setSt={setSt} />
       </div>
     </main>
   );

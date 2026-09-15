@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <>
-      <Header onSave={handleSave} saved={saved} onBack={() => setView('gallery')} />
+      <Header st={st} onSave={handleSave} saved={saved} onBack={() => setView('gallery')} />
       <div className="studio">
         <EditorPanel st={st} setSt={setSt} />
         <PreviewPanel st={st} setSt={setSt} />
