@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 // Cycles through items one at a time, holding each for `durationSec`,
 // transitioning between them with the chosen `animation`. Stops after the last item.
 const ALIGN_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' };
+const VERTICAL_ALIGN_ITEMS = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
 
-export default function SingleItemTicker({ items, animation, durationSec, itemStyle, className, align = 'left' }) {
+export default function SingleItemTicker({ items, animation, durationSec, itemStyle, className, align = 'left', verticalAlign, onIndexChange }) {
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState('in'); // 'in' | 'hold' | 'out'
   const key = items.join('|');
@@ -15,6 +16,10 @@ export default function SingleItemTicker({ items, animation, durationSec, itemSt
     setIndex(0);
     setPhase('in');
   }, [key, animation, durationSec]);
+
+  useEffect(() => {
+    if (onIndexChange) onIndexChange(safeIndex);
+  }, [safeIndex, onIndexChange]);
 
   useEffect(() => {
     if (items.length === 0) return undefined;
@@ -45,7 +50,13 @@ export default function SingleItemTicker({ items, animation, durationSec, itemSt
   const cls = `single-item anim-${animation} phase-${phase}${className ? ' ' + className : ''}`;
 
   return (
-    <div className="single-item-wrap" style={{ justifyContent: ALIGN_JUSTIFY[align] || 'flex-start' }}>
+    <div
+      className="single-item-wrap"
+      style={{
+        justifyContent: ALIGN_JUSTIFY[align] || 'flex-start',
+        ...(verticalAlign ? { alignItems: VERTICAL_ALIGN_ITEMS[verticalAlign] || 'center' } : {}),
+      }}
+    >
       <span key={safeIndex} className={cls} style={itemStyle}>{items[safeIndex]}</span>
     </div>
   );

@@ -150,7 +150,7 @@ export default function StyleControls({ st, setSt }) {
       <hr className="style-sep" />
 
       <div className="style-sec">
-        <div className={'form-row ' + (s.layout === 'double-decker' ? 'form-row-5' : 'form-row-4')}>
+        <div className="form-row form-row-4">
           <div className="form-g">
             <label className="form-lbl form-lbl-row">
               Badge Text
@@ -172,38 +172,15 @@ export default function StyleControls({ st, setSt }) {
             <label className="form-lbl">Background</label>
             <ColorField value={b.bgColor} fallback="#D7282F" onChange={(v) => setBadge('bgColor', v)} />
           </div>
-          {s.layout === 'double-decker' ? (
-            <>
-              <div className="form-g" style={{ opacity: b.show ? 1 : 0.45, pointerEvents: b.show ? 'auto' : 'none' }}>
-                <label className="form-lbl">Bottom Tag Text</label>
-                <input
-                  type="text"
-                  className="form-inp"
-                  placeholder="24/7"
-                  maxLength={10}
-                  value={b.tag2 || ''}
-                  onChange={(e) => setBadge('tag2', e.target.value)}
-                />
-              </div>
-              <div className="form-g" style={{ opacity: b.show ? 1 : 0.45, pointerEvents: b.show ? 'auto' : 'none' }}>
-                <label className="form-lbl">Banner Style</label>
-                <select className="form-inp form-sel" value={s.ddStyle || 'chevron'} onChange={(e) => setStyle('ddStyle', e.target.value)}>
-                  <option value="chevron">Chevron — angled banner + tag</option>
-                  <option value="split">Split block — solid + angled</option>
-                  <option value="stripes">Diagonal stripes accent</option>
-                  <option value="pill">Rounded pill tag</option>
-                </select>
-              </div>
-            </>
-          ) : (
-            <div className="form-g" style={{ opacity: b.show ? 1 : 0.45, pointerEvents: b.show ? 'auto' : 'none' }}>
-              <label className="form-lbl">Shape</label>
-              <select className="form-inp form-sel" value={s.badgeShape || 'flat'} onChange={(e) => setStyle('badgeShape', e.target.value)}>
-                <option value="flat">Flat</option>
-                <option value="wedge">Wedge — angled</option>
-              </select>
-            </div>
-          )}
+          <div className="form-g" style={{ opacity: b.show ? 1 : 0.45, pointerEvents: b.show ? 'auto' : 'none' }}>
+            <label className="form-lbl">Banner Style</label>
+            <select className="form-inp form-sel" value={s.ddStyle || 'chevron'} onChange={(e) => setStyle('ddStyle', e.target.value)}>
+              <option value="chevron">Chevron — angled banner + tag</option>
+              <option value="split">Split block — solid + angled</option>
+              <option value="stripes">Diagonal stripes accent</option>
+              <option value="pill">Rounded pill tag</option>
+            </select>
+          </div>
           <div className="form-g" style={{ opacity: b.show ? 1 : 0.45, pointerEvents: b.show ? 'auto' : 'none' }}>
             <label className="form-lbl">Badge Size</label>
             <select className="form-inp form-sel" value={b.scale || 1} onChange={(e) => setBadge('scale', parseFloat(e.target.value))}>
@@ -213,6 +190,7 @@ export default function StyleControls({ st, setSt }) {
               <option value={1.6}>Extra Large</option>
             </select>
           </div>
+          <div aria-hidden="true" />
         </div>
       </div>
 

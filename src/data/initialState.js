@@ -30,3 +30,58 @@ export const initialState = {
     json: [],
   },
 };
+
+export const initialWidgetState = {
+  template: 'crimson-dots',
+  heading: '',
+  items: [''],
+  category: 'News',
+  showTime: true,
+  publishedAt: null,
+  showProduct: true,
+  src: 'manual',
+  rssUrl: '',
+  jsonUrl: '',
+  drafts: {
+    manual: [''],
+    rss: [],
+    json: [],
+  },
+  // Per-headline media picks for the Feed/JSON sources — parallel arrays to
+  // drafts.rss/drafts.json, each entry `{ included, pos }` or null if the
+  // user hasn't ticked media for that line yet.
+  media: {
+    rss: [],
+    json: [],
+  },
+  style: {
+    bg: '#8A1B12',
+    bgGradient: 'linear-gradient(160deg, #E8432B 0%, #6E140D 55%)',
+    texture: 'spiral',
+    textureOpacity: 0.28,
+    headingBg: 'rgba(194,47,30,0)',
+    headingBgGradient: null,
+    fontFamily: 'Inter, sans-serif',
+  },
+  headingText: {
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontSize: '19px',
+    fontWeight: '800',
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    textAlign: 'left',
+  },
+  bodyText: {
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '15px',
+    fontWeight: '800',
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    textAlign: 'center',
+    verticalAlign: 'middle',
+  },
+  behavior: {
+    animation: 'fade',
+    itemDuration: 4,
+  },
+};

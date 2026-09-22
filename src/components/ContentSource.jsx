@@ -19,28 +19,61 @@ const JSON_HEADLINES = [
 
 const SRC_LABEL = { manual: 'Manual', rss: 'Feed', json: 'JSON' };
 
-// A draft "has data" if at least one non-blank line exists.
-const hasData = (list) => Array.isArray(list) && list.some((x) => (x || '').trim());
-
-export default function ContentSource({ st, setSt }) {
+export default function ContentSource({ st, setSt, title = 'Content Source', bare = false, kind = 'ticker', hideTabs = false, viewTab: viewTabProp, onViewTabChange, afterUrl = null }) {
   const [rssLoaded, setRssLoaded] = useState(false);
   const [rssError, setRssError] = useState('');
   const [jsonLoaded, setJsonLoaded] = useState(false);
   const [jsonError, setJsonError] = useState('');
 
-  // pendingSave: which tab's Save was clicked while other tabs also hold data —
-  // drives the "which source do you want to use" confirm modal.
-  const [pendingSave, setPendingSave] = useState(null); // 'manual' | 'rss' | 'json' | null
-  const [savedFlag, setSavedFlag] = useState(null); // which tab just showed "Saved!"
 
   // viewTab: which tab panel is open for editing — independent of st.src,
   // which is the source actually live on the ticker (drives the active-tab highlight).
-  const [viewTab, setViewTab] = useState(st.src);
+  // Can be lifted to a parent (e.g. to render the tab bar elsewhere) via viewTab/onViewTabChange.
+  const [viewTabState, setViewTabState] = useState(st.src);
+  const viewTab = viewTabProp ?? viewTabState;
+  const setViewTab = onViewTabChange ?? setViewTabState;
 
   const drafts = st.drafts || { manual: [], rss: [], json: [] };
+  const media = st.media || { rss: [], json: [] };
+  const [mediaEnabled, setMediaEnabled] = useState({ rss: false, json: false });
 
+  // Editing a tab's content (typing, or validating a Feed/JSON URL) commits
+  // it as the live source immediately — there's no separate Save step.
   const setDraft = (key, items) =>
-    setSt((s) => ({ ...s, drafts: { ...(s.drafts || {}), [key]: items } }));
+    setSt((s) => {
+      const next = { ...s, drafts: { ...(s.drafts || {}), [key]: items }, src: key, items };
+      if (kind === 'widget' && key !== 'manual' && items.length) {
+        next.heading = items[0];
+        next.items = items.slice(1);
+        const mediaList = (s.media || media)[key] || [];
+        next.media = { ...(s.media || media), [key]: mediaList.slice(1) };
+      }
+      return next;
+    });
+
+  const getMediaPos = (key) => {
+    const list = media[key] || [];
+    const first = list.find((m) => m);
+    return (first && first.pos) || 'left';
+  };
+
+  // No per-headline picking — toggling "Include images/videos" on/off applies
+  // to every headline in this source at once.
+  const setMediaEnabledForAll = (key, on) =>
+    setSt((s) => {
+      const count = ((s.drafts || drafts)[key] || []).length;
+      const pos = getMediaPos(key);
+      const list = on ? Array.from({ length: count }, () => ({ pos })) : [];
+      return { ...s, media: { ...(s.media || media), [key]: list } };
+    });
+
+  // Position applies to the whole set of ticked headlines at once (one
+  // left/right choice for the source, not per headline).
+  const setMediaPos = (key, pos) =>
+    setSt((s) => {
+      const list = ((s.media || media)[key] || []).map((m) => (m ? { ...m, pos } : m));
+      return { ...s, media: { ...(s.media || media), [key]: list } };
+    });
 
   const isValidFeedUrl = (v) => {
     try {
@@ -89,151 +122,165 @@ export default function ContentSource({ st, setSt }) {
     setJsonLoaded(true);
   };
 
-  // Other sources (besides `key`) that currently hold data.
-  const othersWithData = (key) => Object.keys(drafts).filter((k) => k !== key && hasData(drafts[k]));
-
-  const commit = (key) => {
-    setSt((s) => ({ ...s, src: key, items: (s.drafts || drafts)[key] || [] }));
-    setSavedFlag(key);
-    setTimeout(() => setSavedFlag((f) => (f === key ? null : f)), 2200);
-  };
-
-  const handleSaveClick = (key) => {
-    if (othersWithData(key).length > 0) {
-      setPendingSave(key);
-      return;
-    }
-    commit(key);
-  };
-
-  const chooseSource = (key) => {
-    setPendingSave(null);
-    setViewTab(key);
-    commit(key);
-  };
-
-  return (
-    <div className="sec">
-      <div className="sec-hd"><span className="sec-title">Content Source</span></div>
-      <div className="src-tog">
-        <button className={'src-opt' + (viewTab === 'manual' ? ' active' : '')} onClick={() => setViewTab('manual')}>
-          Manual{st.src === 'manual' && <span className="src-opt-live-dot" title="Live on ticker" />}
-        </button>
-        <button className={'src-opt' + (viewTab === 'rss' ? ' active' : '')} onClick={() => setViewTab('rss')}>
-          Feed{st.src === 'rss' && <span className="src-opt-live-dot" title="Live on ticker" />}
-        </button>
-        <button className={'src-opt' + (viewTab === 'json' ? ' active' : '')} onClick={() => setViewTab('json')}>
-          JSON{st.src === 'json' && <span className="src-opt-live-dot" title="Live on ticker" />}
-        </button>
-      </div>
+  const body = (
+    <>
+      {!hideTabs && (
+        <div className="src-tog">
+          <button className={'src-opt' + (viewTab === 'manual' ? ' active' : '')} onClick={() => setViewTab('manual')}>
+            Manual{st.src === 'manual' && <span className="src-opt-live" title={`Live on ${kind}`}><span className="src-opt-live-dot" />Active</span>}
+          </button>
+          <button className={'src-opt' + (viewTab === 'rss' ? ' active' : '')} onClick={() => setViewTab('rss')}>
+            Feed{st.src === 'rss' && <span className="src-opt-live" title={`Live on ${kind}`}><span className="src-opt-live-dot" />Active</span>}
+          </button>
+          <button className={'src-opt' + (viewTab === 'json' ? ' active' : '')} onClick={() => setViewTab('json')}>
+            JSON{st.src === 'json' && <span className="src-opt-live" title={`Live on ${kind}`}><span className="src-opt-live-dot" />Active</span>}
+          </button>
+        </div>
+      )}
 
       {viewTab === 'manual' && (
         <div id="manualSec">
           <ItemsEditor items={drafts.manual} onChange={(v) => setDraft('manual', v)} />
-          <SaveRow onSave={() => handleSaveClick('manual')} saved={savedFlag === 'manual'} active={st.src === 'manual'} />
         </div>
       )}
 
       {viewTab === 'rss' && (
-        <div id="rssSec">
-          <div className="form-g" style={{ marginBottom: 10 }}>
-            <label className="form-lbl">Feed URL</label>
-            <div className="rss-row">
-              <input
-                type="text"
-                className="form-inp"
-                placeholder="Paste any RSS/Atom feed URL — e.g. https://feeds.timesofindia.com/..."
-                value={st.rssUrl}
-                onChange={(e) => { setRssLoaded(false); setSt((s) => ({ ...s, rssUrl: e.target.value })); }}
-              />
-              <button className={'btn' + (rssLoaded && !rssError ? ' btn-success' : ' btn-ghost')} style={{ flexShrink: 0, height: 33, padding: '0 11px', fontSize: 12 }} onClick={loadRss}>
-                {rssLoaded && !rssError ? 'Validated' : 'Validate'}
-              </button>
-            </div>
+        <div className="form-g" style={{ marginBottom: 10 }}>
+          <label className="form-lbl">Feed URL</label>
+          <div className="rss-row">
+            <input
+              type="text"
+              className="form-inp"
+              placeholder="Paste any RSS/Atom feed URL — e.g. https://feeds.timesofindia.com/..."
+              value={st.rssUrl}
+              onChange={(e) => { setRssLoaded(false); setSt((s) => ({ ...s, rssUrl: e.target.value })); }}
+            />
+            <button className={'btn' + (rssLoaded && !rssError ? ' btn-success' : ' btn-ghost')} style={{ flexShrink: 0, height: 33, padding: '0 11px', fontSize: 12 }} onClick={loadRss}>
+              {rssLoaded && !rssError ? 'Validated' : 'Validate'}
+            </button>
           </div>
           {rssError && (
             <div className="feed-status feed-status-error">{rssError}</div>
           )}
+        </div>
+      )}
+
+      {viewTab === 'rss' && afterUrl}
+
+      {viewTab === 'rss' && (
+        <div id="rssSec">
           {rssLoaded && !rssError && (
             <>
               <ItemsEditor items={drafts.rss} onChange={() => {}} readOnly />
-              <SaveRow onSave={() => handleSaveClick('rss')} saved={savedFlag === 'rss'} active={st.src === 'rss'} />
+              {kind === 'widget' && (
+                <MediaPicker
+                  enabled={mediaEnabled.rss}
+                  onToggleEnabled={() => {
+                    const next = !mediaEnabled.rss;
+                    setMediaEnabled((m) => ({ ...m, rss: next }));
+                    setMediaEnabledForAll('rss', next);
+                  }}
+                  pos={getMediaPos('rss')}
+                  onSetPos={(pos) => setMediaPos('rss', pos)}
+                />
+              )}
+              {st.src === 'rss' && <div className="src-save-row"><span className="src-save-hint">This source is currently live on the {kind}.</span></div>}
             </>
           )}
         </div>
       )}
 
       {viewTab === 'json' && (
-        <div id="jsonSec">
-          <div className="form-g" style={{ marginBottom: 10 }}>
-            <label className="form-lbl">JSON URL or raw array</label>
-            <div className="rss-row">
-              <input
-                type="text"
-                className="form-inp"
-                placeholder='https://api.example.com/headlines.json or ["Headline 1", "Headline 2"]'
-                value={st.jsonUrl}
-                onChange={(e) => { setJsonLoaded(false); setSt((s) => ({ ...s, jsonUrl: e.target.value })); }}
-              />
-              <button className={'btn' + (jsonLoaded && !jsonError ? ' btn-success' : ' btn-ghost')} style={{ flexShrink: 0, height: 33, padding: '0 11px', fontSize: 12 }} onClick={loadJson}>
-                {jsonLoaded && !jsonError ? 'Validated' : 'Validate'}
-              </button>
-            </div>
+        <div className="form-g" style={{ marginBottom: 10 }}>
+          <label className="form-lbl">JSON URL or raw array</label>
+          <div className="rss-row">
+            <input
+              type="text"
+              className="form-inp"
+              placeholder='https://api.example.com/headlines.json or ["Headline 1", "Headline 2"]'
+              value={st.jsonUrl}
+              onChange={(e) => { setJsonLoaded(false); setSt((s) => ({ ...s, jsonUrl: e.target.value })); }}
+            />
+            <button className={'btn' + (jsonLoaded && !jsonError ? ' btn-success' : ' btn-ghost')} style={{ flexShrink: 0, height: 33, padding: '0 11px', fontSize: 12 }} onClick={loadJson}>
+              {jsonLoaded && !jsonError ? 'Validated' : 'Validate'}
+            </button>
           </div>
           {jsonError && (
             <div className="feed-status feed-status-error">{jsonError}</div>
           )}
+        </div>
+      )}
+
+      {viewTab === 'json' && afterUrl}
+
+      {viewTab === 'json' && (
+        <div id="jsonSec">
           {jsonLoaded && !jsonError && (
             <>
               <ItemsEditor items={drafts.json} onChange={() => {}} readOnly />
-              <SaveRow onSave={() => handleSaveClick('json')} saved={savedFlag === 'json'} active={st.src === 'json'} />
+              {kind === 'widget' && (
+                <MediaPicker
+                  enabled={mediaEnabled.json}
+                  onToggleEnabled={() => {
+                    const next = !mediaEnabled.json;
+                    setMediaEnabled((m) => ({ ...m, json: next }));
+                    setMediaEnabledForAll('json', next);
+                  }}
+                  pos={getMediaPos('json')}
+                  onSetPos={(pos) => setMediaPos('json', pos)}
+                />
+              )}
+              {st.src === 'json' && <div className="src-save-row"><span className="src-save-hint">This source is currently live on the {kind}.</span></div>}
             </>
           )}
         </div>
       )}
 
-      {pendingSave && (
-        <SourceConflictModal
-          requested={pendingSave}
-          candidates={[pendingSave, ...othersWithData(pendingSave)]}
-          onChoose={chooseSource}
-          onCancel={() => setPendingSave(null)}
-        />
-      )}
+    </>
+  );
+
+  if (bare) return body;
+
+  return (
+    <div className="sec">
+      <div className="sec-hd"><span className="sec-title">{title}</span></div>
+      {body}
     </div>
   );
 }
 
-function SaveRow({ onSave, saved, active }) {
+export function ContentSourceTabs({ st, viewTab, onViewTabChange, kind = 'ticker' }) {
   return (
-    <div className="src-save-row">
-      {active && <span className="src-save-hint">This source is currently live on the ticker.</span>}
-      <button className={'btn btn-primary' + (saved ? ' btn-success' : '')} onClick={onSave}>
-        {saved ? 'Saved!' : 'Save'}
+    <div className="src-tog">
+      <button className={'src-opt' + (viewTab === 'manual' ? ' active' : '')} onClick={() => onViewTabChange('manual')}>
+        Manual{st.src === 'manual' && <span className="src-opt-live" title={`Live on ${kind}`}><span className="src-opt-live-dot" />Active</span>}
+      </button>
+      <button className={'src-opt' + (viewTab === 'rss' ? ' active' : '')} onClick={() => onViewTabChange('rss')}>
+        Feed{st.src === 'rss' && <span className="src-opt-live" title={`Live on ${kind}`}><span className="src-opt-live-dot" />Active</span>}
+      </button>
+      <button className={'src-opt' + (viewTab === 'json' ? ' active' : '')} onClick={() => onViewTabChange('json')}>
+        JSON{st.src === 'json' && <span className="src-opt-live" title={`Live on ${kind}`}><span className="src-opt-live-dot" />Active</span>}
       </button>
     </div>
   );
 }
 
-function SourceConflictModal({ requested, candidates, onChoose, onCancel }) {
+function MediaPicker({ enabled, onToggleEnabled, pos, onSetPos }) {
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true">
-      <div className="modal-card">
-        <div className="modal-title">Multiple content sources have data</div>
-        <p className="modal-body">
-          You also have content saved in {candidates.filter((c) => c !== requested).map((c) => SRC_LABEL[c]).join(' and ')}.
-          Choose which source should be used on the ticker.
-        </p>
-        <div className="modal-choices">
-          {candidates.map((c) => (
-            <button key={c} className={'modal-choice' + (c === requested ? ' modal-choice-suggested' : '')} onClick={() => onChoose(c)}>
-              <span>{SRC_LABEL[c]}</span>
-              {c === requested && <span className="modal-choice-tag">just edited</span>}
-            </button>
-          ))}
-        </div>
-        <button className="btn btn-ghost modal-cancel" onClick={onCancel}>Cancel</button>
+    <div className="media-picker">
+      <div className="media-picker-header">
+        <label className="media-picker-toggle">
+          <input type="checkbox" checked={enabled} onChange={onToggleEnabled} />
+          Include images/videos with these headlines
+        </label>
+        {enabled && (
+          <div className="src-tog media-picker-pos">
+            <button type="button" className={'src-opt' + (pos === 'left' ? ' active' : '')} onClick={() => onSetPos('left')}>Left</button>
+            <button type="button" className={'src-opt' + (pos === 'right' ? ' active' : '')} onClick={() => onSetPos('right')}>Right</button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+

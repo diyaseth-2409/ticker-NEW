@@ -1,10 +1,15 @@
+import { useRef } from 'react';
 import TickerView from './TickerView.jsx';
 import StyleControls from './StyleControls.jsx';
+import FullscreenButton from './FullscreenButton.jsx';
 
 export default function PreviewPanel({ st, setSt }) {
+  const canvasRef = useRef(null);
+
   return (
     <aside className="panel-right">
-      <div className="broadcast-canvas">
+      <div className="broadcast-canvas" ref={canvasRef}>
+        <FullscreenButton targetRef={canvasRef} />
         <div className="broadcast-frame-group">
           <div className="broadcast-frame" id="broadcastFrame">
             <div className="broadcast-video">

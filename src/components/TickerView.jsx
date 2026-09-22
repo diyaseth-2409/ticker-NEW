@@ -82,7 +82,10 @@ export default function TickerView({ st, scaled = false }) {
     </div>
   );
 
-  if (s.layout === 'double-decker' && b.show) {
+  // Double-decker layout disabled for now — kept behind this permanently-false
+  // check so the rendering path/markup is preserved for later re-enable.
+  // eslint-disable-next-line no-constant-condition
+  if (false && s.layout === 'double-decker' && b.show) {
     const ddStyle = s.ddStyle || 'chevron';
     return (
       <div className={'p-ticker p-ticker-dd p-dd-' + ddStyle + (scaled ? '' : ' p-ticker-real')} style={{ height: ddTickerStyle.height }}>
@@ -102,10 +105,15 @@ export default function TickerView({ st, scaled = false }) {
     );
   }
 
+  const ddStyle = s.ddStyle || 'chevron';
+
   return (
     <div className={'p-ticker' + (scaled ? '' : ' p-ticker-real')} style={tickerStyle}>
       {b.show && (
-        <div className={'p-badge' + (s.badgeShape === 'wedge' ? ' p-badge-wedge' : '')} style={{ background: b.bgColor, color: badgeAutoColor, fontWeight: b.fontWeight, '--badge-scale': b.scale || 1 }}>
+        <div className={'p-badge p-badge-' + ddStyle + (s.badgeShape === 'wedge' ? ' p-badge-wedge' : '')} style={{ background: b.bgColor, color: badgeAutoColor, fontWeight: b.fontWeight, '--badge-scale': b.scale || 1 }}>
+          {ddStyle === 'stripes' && (
+            <span className="p-dd-stripes-mark" aria-hidden="true"><span /><span /><span /></span>
+          )}
           {b.type === 'LIVE' && <div className="p-badge-dot" style={{ background: badgeAutoColor }}></div>}
           <span>{badgeLabel(b)}</span>
         </div>
